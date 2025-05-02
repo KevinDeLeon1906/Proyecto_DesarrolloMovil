@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proyecto/destinoCard.dart';
+import 'package:proyecto/pantalla_login.dart';
 
 import 'constantes.dart' as con;
 
@@ -126,7 +127,13 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
               ),
               IconButton(
                 icon: const Icon(Icons.person, color: Colors.grey, size: 40),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => LoginScreen(),
+                  )
+                  );
+                },
               ),
             ],
           ),
