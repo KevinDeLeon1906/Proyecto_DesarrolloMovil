@@ -41,7 +41,7 @@ class _SearchScreenState extends State<SearchScreen> {
           onPressed: () {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
-                builder: (context) => const PantallaPrincipal(),
+                builder: (context) => const HomeScreen(),
               )
             );
           },
@@ -103,14 +103,14 @@ class _SearchScreenState extends State<SearchScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 children: const [
                   SearchResultCard(
-                    imagePath: 'assets/images/img1.png',
+                    imagePath: 'assets/images/casa_roca.png',
                     name: 'Casa roca',
                     location: 'Tequila, Jalisco',
                     price: 59,
                   ),
                   SizedBox(height: 16),
                   SearchResultCard(
-                    imagePath: 'assets/images/img2.png',
+                    imagePath: 'assets/images/casa_tortugas.png',
                     name: 'Casa Las Tortugas',
                     location: 'La Barrita, Mexico',
                     price: 89,

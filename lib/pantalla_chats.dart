@@ -24,7 +24,7 @@ class ListMessagesScreen extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
-                  builder: (context) => const PantallaPrincipal(),
+                  builder: (context) => const HomeScreen(),
                 )
             );
           },

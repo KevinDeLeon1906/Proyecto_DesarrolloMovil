@@ -1,91 +1,94 @@
 import 'package:flutter/material.dart';
-import 'package:proyecto/pantalla_informacion_lugar.dart';
+import 'package:proyecto/rental_house.dart';
 
-class DestinoCard extends StatelessWidget {
-  final String imagePath;
-  final String location;
-  final double rating;
-  final String? distance;
-  final Map<String, dynamic>? detallesDestino;
+class RentalHouseCard extends StatelessWidget {
+  final RentalHouse house;
+  final Function()? onTap;
+  final Function()? onFavoriteToggle;
 
-  const DestinoCard({
+  const RentalHouseCard({
     super.key,
-    required this.imagePath,
-    required this.location,
-    required this.rating,
-    this.distance,
-    this.detallesDestino,
+    required this.house,
+    this.onTap,
+    this.onFavoriteToggle,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DestinoDetalleScreen(
-              imagePath: imagePath,
-              location: location,
-              rating: rating,
-              distance: distance,
-              detallesDestino: detallesDestino,
-            ),
-          ),
-        );
-      },
-      splashColor: Colors.pink.withOpacity(0.3),
+      onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.asset(
-                imagePath,
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  print('Error loading image: $error');
-                  return Container(
-                    height: 180,
-                    width: double.infinity,
-                    color: Colors.grey[300],
-                    child: const Center(
-                      child: Icon(Icons.error, color: Colors.red),
+          // Imagen con bordes redondeados y botón de favorito
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.asset(
+                  house.imagePath,
+                  height: 180,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 180,
+                      width: double.infinity,
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.error, color: Colors.red),
+                    );
+                  },
+                ),
+              ),
+
+              // Botón de favorito
+              if (onFavoriteToggle != null)
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: InkWell(
+                    onTap: onFavoriteToggle,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.8),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        house.isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: house.isFavorite ? Colors.red : Colors.grey,
+                        size: 20,
+                      ),
                     ),
-                  );
-                },
-              )
+                  ),
+                ),
+            ],
           ),
+
           const SizedBox(height: 8),
 
-          // Información del destino
+          // Información de la casa
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                location,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                distance ?? '',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
+              Expanded(
+                child: Text(
+                  '${house.name}, ${house.location}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   const Icon(Icons.star, color: Colors.amber, size: 18),
                   const SizedBox(width: 4),
                   Text(
-                    rating.toString(),
+                    house.rating.toString(),
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -94,6 +97,38 @@ class DestinoCard extends StatelessWidget {
                 ],
               ),
             ],
+          ),
+
+          // Distancia (si está disponible)
+          if (house.distance != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Row(
+                children: [
+                  Icon(Icons.location_on, color: Colors.grey[400], size: 16),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${house.distance} km',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // Precio
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Text(
+              '\$${house.price.toInt()}/Person',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.pink,
+              ),
+            ),
           ),
         ],
       ),

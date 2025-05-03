@@ -39,7 +39,7 @@ class TaskBar extends StatelessWidget {
                 if (selectedIndex != 0) {
                   Navigator.of(context).pushReplacement(
                       MaterialPageRoute(
-                        builder: (context) => const PantallaPrincipal(),
+                        builder: (context) => const HomeScreen(),
                       )
                   );
                 }
