@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:proyecto/destinoCard.dart';
-import 'package:proyecto/pantalla_login.dart';
+import 'package:proyecto/pantalla_buscar.dart';
+import 'package:proyecto/taskBar.dart';
 
-import 'constantes.dart' as con;
 
 class PantallaPrincipal extends StatefulWidget {
   const PantallaPrincipal({super.key});
@@ -20,26 +20,10 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
         child: Column(
           children: [
             // Barra de búsqueda
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search places',
-                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-            ),
-
+            SearchBarNavigation(),
             // Contenido principal
             Expanded(
+              flex: 1,
               child: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -74,17 +58,8 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                       const SizedBox(height: 16),
 
                       DestinoCard(
-                        imagePath: 'assets/images/img1.png',
-                        location: 'Tequila, Jalisco',
-                        rating: 4.7,
-                        distance: '80 km',
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      DestinoCard(
-                        imagePath: 'assets/images/img2.png',
-                        location: 'Punta Mita, Mexico',
+                        imagePath: 'assets/images/peace_garden.png',
+                        location: 'Jalpan, Queretaro',
                         rating: 4.7,
                         distance: '100 km',
                       ),
@@ -96,44 +71,41 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.white,
+      bottomNavigationBar: TaskBar(selectedIndex: 0,),
+    );
+  }
+}
+
+class SearchBarNavigation extends StatelessWidget {
+  const SearchBarNavigation({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SearchScreen()),
+          );
+        },
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(30),
           ),
-          height: 60,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconButton(
-                icon: const Icon(Icons.home, color: Colors.grey, size: 40),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: const Icon(Icons.people, color: Colors.grey, size: 40),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: const Icon(Icons.search_outlined, color: con.rosa, size: 40),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: const Icon(Icons.message, color: Colors.grey, size: 40),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: const Icon(Icons.person, color: Colors.grey, size: 40),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => LoginScreen(),
-                  )
-                  );
-                },
+              const Icon(Icons.search, color: Colors.grey),
+              const SizedBox(width: 10),
+              Text(
+                'Search places',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 16,
+                ),
               ),
             ],
           ),

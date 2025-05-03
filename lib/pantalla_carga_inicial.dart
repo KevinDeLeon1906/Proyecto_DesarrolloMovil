@@ -23,7 +23,6 @@ class _PantallaCargaInicialState extends State<PantallaCargaInicial> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Color rosa brillante similar al de la imagen
       backgroundColor: con.rosa,
       body: Center(
         child: Text(

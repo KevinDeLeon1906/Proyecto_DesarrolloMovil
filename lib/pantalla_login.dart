@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proyecto/constantes.dart' as con;
+import 'package:proyecto/pantalla_principal.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -43,11 +44,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back_ios_new, size: 16),
                   onPressed: () {
-                    Navigator.pop(context);
+                    Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => const PantallaPrincipal(),
+                        )
+                    );
                   },
                 ),
               ),
-
               const SizedBox(height: 40),
 
               // Título LOGIN
