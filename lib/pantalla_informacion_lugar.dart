@@ -1,20 +1,14 @@
-// Pantalla de detalle a la que navegaremos
 import 'package:flutter/material.dart';
+import 'package:proyecto/rental_house.dart';
 
 class DestinoDetalleScreen extends StatelessWidget {
-  final String imagePath;
-  final String location;
-  final double rating;
-  final String? distance;
-  final Map<String, dynamic>? detallesDestino;
+  final RentalHouse destino;
+  final Function()? onFavoriteToggle;
 
   const DestinoDetalleScreen({
     super.key,
-    required this.imagePath,
-    required this.location,
-    required this.rating,
-    this.distance,
-    this.detallesDestino,
+    required this.destino,
+    this.onFavoriteToggle,
   });
 
   @override
@@ -22,7 +16,6 @@ class DestinoDetalleScreen extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          // Imagen principal y encabezado
           Stack(
             children: [
               Container(
@@ -30,7 +23,7 @@ class DestinoDetalleScreen extends StatelessWidget {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(imagePath),
+                    image: AssetImage(destino.imagePath),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -75,16 +68,11 @@ class DestinoDetalleScreen extends StatelessWidget {
                       ),
                     ),
 
-                    // Botón de compartir
+                    // Botón de favorito
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.7),
                         shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.save_alt_sharp, size: 16),
-                        onPressed: () {
-                        },
                       ),
                     ),
                   ],
@@ -127,16 +115,16 @@ class DestinoDetalleScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                location,
+                                destino.name,
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
-                                'Juan Pérez',
-                                style: TextStyle(
+                              Text(
+                                destino.hostName ?? 'Anfitrión',
+                                style: const TextStyle(
                                   fontSize: 14,
                                   color: Colors.grey,
                                 ),
@@ -145,20 +133,37 @@ class DestinoDetalleScreen extends StatelessWidget {
                           ),
                         ),
 
-                        // Foto de perfil (puedes reemplazar esto con una imagen real)
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.pink,
-                              width: 2,
+                        // Foto de perfil
+                        if (destino.hostImagePath != null)
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.pink,
+                                width: 2,
+                              ),
+                              image: DecorationImage(
+                                image: AssetImage(destino.hostImagePath!),
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                            color: Colors.grey[300],
+                          )
+                        else
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.pink,
+                                width: 2,
+                              ),
+                              color: Colors.grey[300],
+                            ),
+                            child: const Icon(Icons.person, size: 20),
                           ),
-                          child: const Icon(Icons.person, size: 20),
-                        ),
                       ],
                     ),
 
@@ -168,24 +173,23 @@ class DestinoDetalleScreen extends StatelessWidget {
                     Row(
                       children: [
                         // Ubicación
-                        if (distance != null)
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.location_on,
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on,
+                              color: Colors.grey,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              destino.region,
+                              style: const TextStyle(
                                 color: Colors.grey,
-                                size: 16,
+                                fontSize: 14,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                distance!,
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
+                        ),
 
                         const SizedBox(width: 16),
 
@@ -199,7 +203,7 @@ class DestinoDetalleScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              rating.toString(),
+                              '${destino.rating} (${destino.reviewCount})',
                               style: const TextStyle(
                                 fontSize: 14,
                               ),
@@ -209,9 +213,9 @@ class DestinoDetalleScreen extends StatelessWidget {
 
                         const Spacer(),
 
-                        // Precio (puedes obtener esto de detallesDestino si lo tienes)
+                        // Precio
                         Text(
-                          '\$${detallesDestino?['precio'] ?? 59}',
+                          '\$${destino.price.toInt()}',
                           style: TextStyle(
                             color: Colors.pink[500],
                             fontSize: 16,
@@ -228,6 +232,21 @@ class DestinoDetalleScreen extends StatelessWidget {
                       ],
                     ),
 
+                    const SizedBox(height: 16),
+
+                    // Iconos de amenidades
+                    if (destino.amenities != null && destino.amenities!.isNotEmpty)
+                      SizedBox(
+                        height: 60,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: destino.amenities!.length,
+                          itemBuilder: (context, index) {
+                            return _buildAmenityIcon(destino.amenities![index]);
+                          },
+                        ),
+                      ),
+
                     const SizedBox(height: 24),
 
                     // Sección "About Destination"
@@ -241,10 +260,9 @@ class DestinoDetalleScreen extends StatelessWidget {
 
                     const SizedBox(height: 8),
 
-                    // Descripción (puedes obtener esto de detallesDestino si lo tienes)
+                    // Descripción
                     Text(
-                      detallesDestino?['descripcion'] ??
-                          'You will get a complete travel package on the beaches. Packaged in the form of airline tickets, recommended Hotel rooms, Transportation. Have you ever been on holiday to the Greek ETC... Read More',
+                      destino.description ?? 'No hay descripción disponible.',
                       style: const TextStyle(
                         fontSize: 14,
                         color: Colors.grey,
@@ -268,7 +286,7 @@ class DestinoDetalleScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: Text(
+                        child: const Text(
                           'Book Now',
                           style: TextStyle(
                             fontSize: 16,
@@ -286,6 +304,65 @@ class DestinoDetalleScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // Widget para los iconos de amenidades
+  Widget _buildAmenityIcon(String amenity) {
+    IconData iconData;
+
+    // Asignar icono según el tipo de amenidad
+    switch (amenity.toLowerCase()) {
+      case 'wifi':
+        iconData = Icons.wifi;
+        break;
+      case 'piscina':
+        iconData = Icons.pool;
+        break;
+      case 'cocina':
+        iconData = Icons.kitchen;
+        break;
+      case 'estacionamiento':
+        iconData = Icons.local_parking;
+        break;
+      case 'aire acondicionado':
+        iconData = Icons.ac_unit;
+        break;
+      case 'playa privada':
+        iconData = Icons.beach_access;
+        break;
+      case 'terraza':
+        iconData = Icons.deck;
+        break;
+      case 'vista al mar':
+        iconData = Icons.water;
+        break;
+      case 'chimenea':
+        iconData = Icons.fireplace;
+        break;
+      case 'senderismo':
+        iconData = Icons.hiking;
+        break;
+      case 'barbacoa':
+        iconData = Icons.outdoor_grill;
+        break;
+      default:
+        iconData = Icons.check_circle;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(right: 12),
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(
+        iconData,
+        color: Colors.grey[700],
+        size: 24,
       ),
     );
   }

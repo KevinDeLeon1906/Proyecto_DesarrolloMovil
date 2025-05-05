@@ -15,7 +15,7 @@ class _PantallaCargaInicialState extends State<PantallaCargaInicial> {
     super.initState();
     Future.delayed(const Duration(seconds: 3), () {
        Navigator.of(context).pushReplacement(
-         MaterialPageRoute(builder: (context) => PantallaPrincipal()),
+         MaterialPageRoute(builder: (context) => const HomeScreen()),
        );
     });
   }

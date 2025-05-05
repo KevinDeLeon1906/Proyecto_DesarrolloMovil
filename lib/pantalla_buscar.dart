@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:proyecto/constantes.dart' as con;
+import 'package:proyecto/destinoCard.dart';
+import 'package:proyecto/pantalla_informacion_lugar.dart';
 import 'package:proyecto/pantalla_principal.dart';
+import 'package:proyecto/rental_house.dart';
+import 'package:proyecto/rental_house_repository.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -11,22 +14,31 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
-  bool _showResults = false;
+  final RentalHouseRepository _repository = RentalHouseRepository();
+  List<RentalHouse> _searchResults = [];
+  bool _isSearching = false;
 
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(() {
-      setState(() {
-        _showResults = _searchController.text.isNotEmpty;
-      });
-    });
+    _searchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text;
+
+    setState(() {
+      _isSearching = query.isNotEmpty;
+      if (_isSearching) {
+        _searchResults = _repository.searchHouses(query);
+      }
+    });
   }
 
   @override
@@ -53,7 +65,6 @@ class _SearchScreenState extends State<SearchScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,53 +82,109 @@ class _SearchScreenState extends State<SearchScreen> {
                 decoration: InputDecoration(
                   hintText: 'Search Places',
                   prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                  suffixIcon: const Icon(Icons.mic, color: Colors.grey),
+                  suffixIcon: _isSearching
+                      ? IconButton(
+                    icon: const Icon(Icons.clear, color: Colors.grey),
+                    onPressed: () {
+                      _searchController.clear();
+                    },
+                  )
+                      : const Icon(Icons.mic, color: Colors.grey),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                onSubmitted: (value) {
-                  // Aquí puedes implementar la lógica de búsqueda
-                  setState(() {
-                    _showResults = true;
-                  });
-                },
               ),
             ),
           ),
 
           // Resultados de búsqueda
-          if (_showResults) ...[
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Text(
-                'Search Places',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                children: const [
-                  SearchResultCard(
-                    imagePath: 'assets/images/casa_roca.png',
-                    name: 'Casa roca',
-                    location: 'Tequila, Jalisco',
-                    price: 59,
+          if (_isSearching) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Search Results (${_searchResults.length})',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  SizedBox(height: 16),
-                  SearchResultCard(
-                    imagePath: 'assets/images/casa_tortugas.png',
-                    name: 'Casa Las Tortugas',
-                    location: 'La Barrita, Mexico',
-                    price: 89,
-                  ),
+                  if (_searchResults.isNotEmpty)
+                    TextButton(
+                      onPressed: () {
+                        _showFilterDialog(context);
+                      },
+                      child: Row(
+                        children: const [
+                          Icon(Icons.filter_list, size: 16),
+                          SizedBox(width: 4),
+                          Text('Filter'),
+                        ],
+                      ),
+                    ),
                 ],
               ),
             ),
+
+            if (_searchResults.isEmpty)
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.search_off,
+                        size: 64,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No results found for "${_searchController.text}"',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Try different keywords or filters',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[500],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  itemCount: _searchResults.length,
+                  itemBuilder: (context, index) {
+                    final house = _searchResults[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: RentalHouseCard(
+                        house: house,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DestinoDetalleScreen(
+                                destino: house,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
           ] else ...[
             // Contenido cuando no hay búsqueda
             Expanded(
@@ -138,6 +205,15 @@ class _SearchScreenState extends State<SearchScreen> {
                         color: Colors.grey[500],
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Try searching by name, location, or region',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[400],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ],
                 ),
               ),
@@ -147,111 +223,63 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
-}
 
-class SearchResultCard extends StatelessWidget {
-  final String imagePath;
-  final String name;
-  final String location;
-  final int price;
+  void _showFilterDialog(BuildContext context) {
+    double maxPrice = 100; // Valor inicial
 
-  const SearchResultCard({
-    super.key,
-    required this.imagePath,
-    required this.name,
-    required this.location,
-    required this.price,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Imagen con bordes redondeados
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: Image.asset(
-              imagePath,
-              height: 120,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 120,
-                  width: double.infinity,
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.error, color: Colors.red),
-                );
-              },
-            ),
-          ),
-
-          // Información del lugar
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('Filter Options'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Nombre y ubicación
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const Text('Maximum Price:'),
+                Row(
                   children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Slider(
+                        value: maxPrice,
+                        min: 0,
+                        max: 200,
+                        divisions: 20,
+                        label: '\$${maxPrice.round()}',
+                        onChanged: (value) {
+                          setDialogState(() {
+                            maxPrice = value;
+                          });
+                        },
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          color: Colors.blue,
-                          size: 14,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          location,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
+                    Text('\$${maxPrice.round()}'),
                   ],
-                ),
-
-                // Precio
-                Text(
-                  '\$$price/Person',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: con.rosa,
-                  ),
                 ),
               ],
             ),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _searchResults = _repository.filterByMaxPrice(maxPrice);
+                  });
+                  Navigator.pop(context);
+                },
+                child: const Text('Apply'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 }
+

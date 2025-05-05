@@ -4,133 +4,149 @@ import 'package:proyecto/rental_house.dart';
 class RentalHouseCard extends StatelessWidget {
   final RentalHouse house;
   final Function()? onTap;
-  final Function()? onFavoriteToggle;
 
   const RentalHouseCard({
     super.key,
     required this.house,
     this.onTap,
-    this.onFavoriteToggle,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Get screen width to make card responsive
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Imagen con bordes redondeados y botón de favorito
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.asset(
-                  house.imagePath,
-                  height: 180,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 180,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image container with responsive height
+            Stack(
+              children: [
+                AspectRatio(
+                  aspectRatio: 16 / 9, // Maintain consistent aspect ratio
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.asset(
+                      house.imagePath,
                       width: double.infinity,
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.error, color: Colors.red),
-                    );
-                  },
-                ),
-              ),
-
-              // Botón de favorito
-              if (onFavoriteToggle != null)
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: InkWell(
-                    onTap: onFavoriteToggle,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        house.isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: house.isFavorite ? Colors.red : Colors.grey,
-                        size: 20,
-                      ),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[300],
+                          child: const Center(
+                            child: Icon(Icons.error, color: Colors.red),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
-            ],
-          ),
 
-          const SizedBox(height: 8),
+              ],
+            ),
 
-          // Información de la casa
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  '${house.name}, ${house.location}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Row(
-                children: [
-                  const Icon(Icons.star, color: Colors.amber, size: 18),
-                  const SizedBox(width: 4),
-                  Text(
-                    house.rating.toString(),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          // Distancia (si está disponible)
-          if (house.distance != null)
+            // Padding that adapts to screen size
             Padding(
-              padding: const EdgeInsets.only(top: 4.0),
-              child: Row(
+              padding: EdgeInsets.symmetric(
+                vertical: isSmallScreen ? 6.0 : 8.0,
+                horizontal: 4.0,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.location_on, color: Colors.grey[400], size: 16),
-                  const SizedBox(width: 4),
+                  // Name and rating row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Name and location with flexible width
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          '${house.name}, ${house.location}',
+                          style: TextStyle(
+                            fontSize: isSmallScreen ? 14 : 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+
+                      // Rating with smaller flex to ensure it doesn't get squeezed
+                      Flexible(
+                        flex: 1,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                                Icons.star,
+                                color: Colors.amber,
+                                size: isSmallScreen ? 16 : 18
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              house.rating.toString(),
+                              style: TextStyle(
+                                fontSize: isSmallScreen ? 12 : 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Spacing that adapts to screen size
+                  SizedBox(height: isSmallScreen ? 2.0 : 4.0),
+
+                  // Distance (if available)
+                  if (house.distance != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2.0),
+                      child: Row(
+                        children: [
+                          Icon(
+                              Icons.location_on,
+                              color: Colors.grey[400],
+                              size: isSmallScreen ? 14 : 16
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            '${house.distance} km',
+                            style: TextStyle(
+                              fontSize: isSmallScreen ? 12 : 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  // Adaptive spacing
+                  SizedBox(height: isSmallScreen ? 2.0 : 4.0),
+
+                  // Price with responsive font size
                   Text(
-                    '${house.distance} km',
+                    '\$${house.price.toInt()}/Person',
                     style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
+                      fontSize: isSmallScreen ? 12 : 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.pink,
                     ),
                   ),
                 ],
               ),
             ),
-
-          // Precio
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Text(
-              '\$${house.price.toInt()}/Person',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.pink,
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

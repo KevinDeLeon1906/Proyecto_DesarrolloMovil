@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:proyecto/destinoCard.dart';
+import 'package:proyecto/pantalla_buscar.dart';
 import 'package:proyecto/pantalla_informacion_lugar.dart';
 import 'package:proyecto/rental_house.dart';
 import 'package:proyecto/rental_house_repository.dart';
+import 'package:proyecto/taskBar.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -22,34 +24,18 @@ class _HomeScreenState extends State<HomeScreen> {
     _houses = _repository.getAllHouses();
   }
 
-  void _toggleFavorite(String id) {
-    setState(() {
-      final updatedHouse = _repository.toggleFavorite(id);
-      final index = _houses.indexWhere((house) => house.id == id);
-      if (index != -1) {
-        _houses[index] = updatedHouse;
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Casas en Renta'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Barra de búsqueda
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: InkWell(
               onTap: () {
-                // Navegar a la pantalla de búsqueda
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const SearchScreen()),
+                );
               },
               child: Container(
                 decoration: BoxDecoration(
@@ -74,7 +60,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Título de sección
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
@@ -104,18 +89,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => DestinoDetalleScreen(
-                            house: house,
-                            onFavoriteToggle: () => _toggleFavorite(house.id),
+                            destino: house, // Pass the RentalHouse object
                           ),
                         ),
                       );
                     },
-                    onFavoriteToggle: () => _toggleFavorite(house.id),
                   ),
                 );
               },
             ),
           ),
+          TaskBar(selectedIndex: 0),
         ],
       ),
     );

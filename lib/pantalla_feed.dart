@@ -56,52 +56,52 @@ class CommunityScreen extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     children: [
                       TravelCategory(
-                        image: 'assets/images/playa.png',
+                        image: 'images/playa.png',
                         name: 'Playa',
                         color: Colors.orange,
                       ),
                       TravelCategory(
-                        image: 'assets/images/tropical.png',
+                        image: 'images/tropical.png',
                         name: 'Tropical',
                         color: Colors.pink,
                       ),
                       TravelCategory(
-                        image: 'assets/images/cabana.png',
+                        image: 'images/cabana.png',
                         name: 'Cabana',
                         color: Colors.blue,
                       ),
                       TravelCategory(
-                        image: 'assets/images/montana.png',
+                        image: 'images/montana.png',
                         name: 'Montaña',
                         color: Colors.brown,
                       ),
                       TravelCategory(
-                        image: 'assets/images/lago.png',
+                        image: 'images/lago.png',
                         name: 'Lago',
                         color: Colors.red,
                       ),
                       TravelCategory(
-                        image: 'assets/images/playa.png',
+                        image: 'images/playa.png',
                         name: 'Playa',
                         color: Colors.orange,
                       ),
                       TravelCategory(
-                        image: 'assets/images/tropical.png',
+                        image: 'images/tropical.png',
                         name: 'Tropical',
                         color: Colors.pink,
                       ),
                       TravelCategory(
-                        image: 'assets/images/cabana.png',
+                        image: 'images/cabana.png',
                         name: 'Cabana',
                         color: Colors.blue,
                       ),
                       TravelCategory(
-                        image: 'assets/images/montana.png',
+                        image: 'images/montana.png',
                         name: 'Montaña',
                         color: Colors.brown,
                       ),
                       TravelCategory(
-                        image: 'assets/images/lago.png',
+                        image: 'images/lago.png',
                         name: 'Lago',
                         color: Colors.red,
                       ),
@@ -125,7 +125,7 @@ class CommunityScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             image: const DecorationImage(
-                              image: AssetImage('assets/images/profile.png'),
+                              image: AssetImage('images/profile.png'),
                               fit: BoxFit.cover,
                             ),
                             border: Border.all(
@@ -185,7 +185,7 @@ class CommunityScreen extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16),
                       child: Image.asset(
-                        'assets/images/peace_garden.png',
+                        'images/peace_garden/peace_garden.png',
                         height: 200,
                         width: double.infinity,
                         fit: BoxFit.cover,
@@ -251,7 +251,7 @@ class CommunityScreen extends StatelessWidget {
                   children: const [
                     Expanded(
                       child: PopularLocationCard(
-                        image: 'assets/images/emerald.png',
+                        image: 'images/emerald.png',
                         title: 'The Beauty of Emerald Pleasures',
                         location: 'Quinta Villas, Mexico',
                       ),
@@ -259,7 +259,7 @@ class CommunityScreen extends StatelessWidget {
                     SizedBox(width: 12),
                     Expanded(
                       child: PopularLocationCard(
-                        image: 'assets/images/treehouse.png',
+                        image: 'images/treehouse.png',
                         title: 'Colorful tree house in Jalpa',
                         location: 'Jalpa',
                       ),

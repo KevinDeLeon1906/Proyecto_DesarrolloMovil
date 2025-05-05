@@ -12,7 +12,6 @@ class RentalHouse {
   final String? hostName;
   final String? hostImagePath;
   final List<String>? amenities;
-  final bool isFavorite;
 
   RentalHouse({
     required this.id,
@@ -28,7 +27,6 @@ class RentalHouse {
     this.hostName,
     this.hostImagePath,
     this.amenities,
-    this.isFavorite = false,
   });
 
   // Método para crear una copia de la casa con algunos valores modificados
@@ -62,7 +60,6 @@ class RentalHouse {
       hostName: hostName ?? this.hostName,
       hostImagePath: hostImagePath ?? this.hostImagePath,
       amenities: amenities ?? this.amenities,
-      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 
@@ -82,7 +79,6 @@ class RentalHouse {
       'hostName': hostName,
       'hostImagePath': hostImagePath,
       'amenities': amenities,
-      'isFavorite': isFavorite,
     };
   }
 
@@ -104,7 +100,6 @@ class RentalHouse {
       amenities: map['amenities'] != null
           ? List<String>.from(map['amenities'])
           : null,
-      isFavorite: map['isFavorite'] ?? false,
     );
   }
 }
