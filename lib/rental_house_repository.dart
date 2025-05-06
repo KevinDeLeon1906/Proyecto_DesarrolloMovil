@@ -2,7 +2,6 @@
 import 'package:proyecto/rental_house.dart';
 
 class RentalHouseRepository {
-  // Simulación de una base de datos con casas de ejemplo
   final List<RentalHouse> _houses = [
     RentalHouse(
       id: '1',

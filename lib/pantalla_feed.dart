@@ -1,432 +1,521 @@
 import 'package:flutter/material.dart';
+import 'package:proyecto/commentsCard.dart';
 import 'package:proyecto/constantes.dart' as con;
+import 'package:proyecto/historiaCard.dart';
+import 'package:proyecto/pantalla_informacion_lugar.dart';
+import 'package:proyecto/rental_house_repository.dart';
 import 'package:proyecto/taskBar.dart';
+import 'package:proyecto/rental_house.dart';
 
-
-class CommunityScreen extends StatelessWidget {
+class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
 
   @override
+  State<CommunityScreen> createState() => _CommunityScreenState();
+}
+
+class _CommunityScreenState extends State<CommunityScreen> {
+  final RentalHouseRepository _repository = RentalHouseRepository();
+  late List<RentalHouse> _houses;
+  late RentalHouse _recommendedHouse;
+
+  @override
+  void initState() {
+    super.initState();
+    _houses = _repository.getAllHouses();
+    // Select a house to recommend (you could use different criteria)
+    _recommendedHouse = _houses.first;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Get screen dimensions for responsive sizing
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isSmallScreen = screenWidth < 360;
+    final horizontalPadding = screenWidth * 0.04; // 4% of screen width
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 16),
+        child: Column(
+          children: [
 
-                // Saludo
-                RichText(
-                  text: const TextSpan(
-                    style: TextStyle(fontSize: 16, color: Colors.black),
+            // Scrollable content
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextSpan(text: 'Hi, '),
-                      TextSpan(
-                        text: 'Fernando',
+                      SizedBox(height: screenHeight * 0.03),
+
+                      Container(
+                        color: Colors.white,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: screenHeight * 0.02),
+
+                            // Saludo
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                              child: RichText(
+                                text: TextSpan(
+                                  style: TextStyle(
+                                      fontSize: isSmallScreen ? 14 : 16,
+                                      color: Colors.black
+                                  ),
+                                  children: const [
+                                    TextSpan(text: 'Hi, '),
+                                    TextSpan(
+                                      text: 'Fernando',
+                                      style: TextStyle(
+                                        color: con.rosa,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(height: screenHeight * 0.01),
+
+                            // Let's travel - Responsive text size
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                              child: Text(
+                                'Let\'s travel',
+                                style: TextStyle(
+                                  fontSize: isSmallScreen ? 20 : 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(height: screenHeight * 0.02),
+
+                            // Categorías de viaje - Fixed height container
+                            SizedBox(
+                              height: 100, // Fixed height
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                                itemCount: 10, // Number of categories
+                                itemBuilder: (context, index) {
+                                  // List of categories with their colors
+                                  final categories = [
+                                    {'name': 'Playa', 'image': 'images/story/playa/playa.png', 'story_image' : 'images/story/playa/playa_story.png',  'color': con.rosa},
+                                    {'name': 'Tropical', 'image': 'images/story/tropical/tropical.png', 'story_image' : 'images/story/tropical/tropical_story.png' ,'color': con.rosa},
+                                    {'name': 'Cabana', 'image': 'images/story/cabana/cabana.png', 'story_image' : 'images/story/cabana/cabana_story.png', 'color': con.rosa},
+                                    {'name': 'Montaña', 'image': 'images/story/montana/montana.png', 'story_image' : 'images/story/montana/montana_story.png' ,'color': con.rosa},
+                                    {'name': 'Lago', 'image': 'images/story/lago/lago.png', 'story_image' : 'images/story/lago/lago_story.png', 'color': con.rosa},
+                                  ];
+
+                                  final category = categories[index % 5]; // Cycle through the 5 categories
+
+                                  return TravelCategory(
+                                    image: category['image'] as String,
+                                    storyImage: category['story_image'] as String,
+                                    name: category['name'] as String,
+                                    color: category['color'] as Color,
+                                    size: 70,
+                                  );
+                                },
+                              ),
+                            ),
+
+                            // Divider to separate fixed header from scrollable content
+                            Divider(height: 1, thickness: 1, color: Colors.grey[200]),
+                          ],
+                        ),
+                      ),
+
+                      // Recomendación destacada
+                      RecommendationCard(
+                        house: _recommendedHouse,
+                        isSmallScreen: isSmallScreen,
+                        screenWidth: screenWidth,
+                        screenHeight: screenHeight,
+                        onCommentTap: () {
+                          _showCommentsBottomSheet(context);
+                        },
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DestinoDetalleScreen(
+                                destino: _recommendedHouse,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+
+                      SizedBox(height: screenHeight * 0.03),
+
+                      // Ubicaciones populares - Responsive text
+                      Text(
+                        'Popular Locations near you!',
                         style: TextStyle(
-                          color: con.rosa,
+                          fontSize: isSmallScreen ? 16 : 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+
+                      SizedBox(height: screenHeight * 0.02),
+
+                      // Tarjetas de ubicaciones populares
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _houses.length > 1 ? PopularLocationCard(
+                              image: _houses[1].imagePath,
+                              title: _houses[1].name,
+                              location: '${_houses[1].location}, ${_houses[1].region}',
+                              height: screenHeight * 0.2,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DestinoDetalleScreen(
+                                      destino: _houses[1],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ) : Container(),
+                          ),
+                          SizedBox(width: screenWidth * 0.03),
+                          Expanded(
+                            child: _houses.length > 2 ? PopularLocationCard(
+                              image: _houses[2].imagePath,
+                              title: _houses[2].name,
+                              location: '${_houses[2].location}, ${_houses[2].region}',
+                              height: screenHeight * 0.2,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DestinoDetalleScreen(
+                                      destino: _houses[2],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ) : Container(),
+                          ),
+                        ],
+                      ),
+
+                      // Bottom spacing to avoid content being hidden by bottom navigation
+                      SizedBox(height: screenHeight * 0.1),
                     ],
                   ),
                 ),
-
-                const SizedBox(height: 8),
-
-                // Let's travel
-                const Text(
-                  'Let\'s travel',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Categorías de viaje
-                SizedBox(
-                  height: 100,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      TravelCategory(
-                        image: 'images/playa.png',
-                        name: 'Playa',
-                        color: Colors.orange,
-                      ),
-                      TravelCategory(
-                        image: 'images/tropical.png',
-                        name: 'Tropical',
-                        color: Colors.pink,
-                      ),
-                      TravelCategory(
-                        image: 'images/cabana.png',
-                        name: 'Cabana',
-                        color: Colors.blue,
-                      ),
-                      TravelCategory(
-                        image: 'images/montana.png',
-                        name: 'Montaña',
-                        color: Colors.brown,
-                      ),
-                      TravelCategory(
-                        image: 'images/lago.png',
-                        name: 'Lago',
-                        color: Colors.red,
-                      ),
-                      TravelCategory(
-                        image: 'images/playa.png',
-                        name: 'Playa',
-                        color: Colors.orange,
-                      ),
-                      TravelCategory(
-                        image: 'images/tropical.png',
-                        name: 'Tropical',
-                        color: Colors.pink,
-                      ),
-                      TravelCategory(
-                        image: 'images/cabana.png',
-                        name: 'Cabana',
-                        color: Colors.blue,
-                      ),
-                      TravelCategory(
-                        image: 'images/montana.png',
-                        name: 'Montaña',
-                        color: Colors.brown,
-                      ),
-                      TravelCategory(
-                        image: 'images/lago.png',
-                        name: 'Lago',
-                        color: Colors.red,
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Recomendación destacada
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Encabezado con perfil
-                    Row(
-                      children: [
-                        // Imagen de perfil
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: const DecorationImage(
-                              image: AssetImage('images/profile.png'),
-                              fit: BoxFit.cover,
-                            ),
-                            border: Border.all(
-                              color: con.rosa,
-                              width: 2,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Nombre y ubicación
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: const [
-                                Text(
-                                  'Peace Garden',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Recommended',
-                                  style: TextStyle(
-                                    color: con.rosa,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const Text(
-                              'Parra de la Fuente',
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        // Distancia
-                        const Text(
-                          '10km away',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Imagen principal
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.asset(
-                        'images/peace_garden/peace_garden.png',
-                        height: 200,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Likes y comentarios
-                    Row(
-                      children: [
-                        LikeButton(
-                          onLikeChanged: (isLiked) {
-                            // updateLikeCount(postId, isLiked);
-                          },
-                        ),
-                        const SizedBox(width: 4),
-                        const Text(
-                          '67',
-                          style: TextStyle(
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        const Icon(
-                          Icons.chat_bubble_outline,
-                          color: Colors.grey,
-                          size: 24,
-                        ),
-                        const SizedBox(width: 4),
-                        const Text(
-                          '137',
-                          style: TextStyle(
-                            fontSize: 16,
-                          ),
-                        ),
-                        const Spacer(),
-                        const Icon(
-                          Icons.more_horiz,
-                          color: Colors.grey,
-                          size: 24,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                // Ubicaciones populares
-                const Text(
-                  'Popular Locations near you!',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Tarjetas de ubicaciones populares
-                Row(
-                  children: const [
-                    Expanded(
-                      child: PopularLocationCard(
-                        image: 'images/emerald.png',
-                        title: 'The Beauty of Emerald Pleasures',
-                        location: 'Quinta Villas, Mexico',
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: PopularLocationCard(
-                        image: 'images/treehouse.png',
-                        title: 'Colorful tree house in Jalpa',
-                        location: 'Jalpa',
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 80),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
-      bottomNavigationBar: TaskBar( selectedIndex: 1,),
+      bottomNavigationBar: const TaskBar(selectedIndex: 1),
+    );
+  }
+
+  // Show comments bottom sheet
+  void _showCommentsBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) {
+          return CommentsSheet(scrollController: scrollController);
+        },
+      ),
     );
   }
 }
 
-// Widget para categorías de viaje
-class TravelCategory extends StatelessWidget {
-  final String image;
-  final String name;
-  final Color color;
+// New widget for recommendation card
+class RecommendationCard extends StatelessWidget {
+  final RentalHouse house;
+  final bool isSmallScreen;
+  final double screenWidth;
+  final double screenHeight;
+  final VoidCallback onCommentTap;
+  final VoidCallback? onTap;
 
-  const TravelCategory({
+  const RecommendationCard({
     super.key,
-    required this.image,
-    required this.name,
-    required this.color,
+    required this.house,
+    required this.isSmallScreen,
+    required this.screenWidth,
+    required this.screenHeight,
+    required this.onCommentTap,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(right: 16),
+    return GestureDetector(
+      onTap: onTap,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Imagen circular con borde
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: color,
-                width: 2,
+          // Encabezado con perfil - Responsive layout
+          Row(
+            children: [
+              // Imagen de perfil - Fixed size
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: AssetImage(house.hostImagePath ?? 'images/profile.png'),
+                    fit: BoxFit.cover,
+                  ),
+                  border: Border.all(
+                    color: con.rosa,
+                    width: 2,
+                  ),
+                ),
               ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(2.0),
-              child: ClipOval(
-                child: Image.asset(
-                  image,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    print('Error loading image: $error');
-                    return Container(
-                      height: 180,
-                      width: double.infinity,
-                      color: Colors.grey[300],
-                      child: Center(
-                        child: Icon(Icons.error, color: Colors.red),
+              SizedBox(width: screenWidth * 0.03),
+
+              // Nombre y ubicación - Flexible width
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            house.name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: isSmallScreen ? 14 : 16,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        SizedBox(width: screenWidth * 0.02),
+                        Text(
+                          'Recommended',
+                          style: TextStyle(
+                            color: con.rosa,
+                            fontSize: isSmallScreen ? 10 : 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      house.hostName ?? 'Host',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: isSmallScreen ? 12 : 14,
                       ),
-                    );
-                  },
-                )
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+
+              // Distancia - Flexible width
+              if (house.distance != null)
+                Flexible(
+                  flex: 1,
+                  child: Text(
+                    '${house.distance}km away',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: isSmallScreen ? 12 : 14,
+                    ),
+                    textAlign: TextAlign.end,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+            ],
+          ),
+
+          SizedBox(height: screenHeight * 0.015),
+
+          // Imagen principal - Responsive height
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: AspectRatio(
+              aspectRatio: 16/9, // Maintain aspect ratio
+              child: Image.asset(
+                house.imagePath,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  print('Error loading image: $error');
+                  return Container(
+                    color: Colors.grey[300],
+                    child: const Center(
+                      child: Icon(Icons.error, color: Colors.red),
+                    ),
+                  );
+                },
               ),
             ),
           ),
-          const SizedBox(height: 8),
-          // Nombre de la categoría
-          Text(
-            name,
-            style: const TextStyle(
-              fontSize: 12,
-            ),
+
+          SizedBox(height: screenHeight * 0.015),
+
+          // Likes y comentarios - Responsive spacing
+          Row(
+            children: [
+              LikeButton(
+                onLikeChanged: (isLiked) {
+                  // updateLikeCount(postId, isLiked);
+                },
+                iconSize: isSmallScreen ? 20 : 24,
+              ),
+              SizedBox(width: screenWidth * 0.01),
+              Text(
+                '${house.reviewCount ~/ 20}', // Using reviewCount to simulate likes
+                style: TextStyle(
+                  fontSize: isSmallScreen ? 14 : 16,
+                ),
+              ),
+              SizedBox(width: screenWidth * 0.04),
+
+              // Comment button with functionality
+              CommentButton(
+                count: house.reviewCount ~/ 10, // Using reviewCount to simulate comments
+                iconSize: isSmallScreen ? 20 : 24,
+                onTap: onCommentTap,
+              ),
+
+              const Spacer(),
+              Icon(
+                Icons.more_horiz,
+                color: Colors.grey,
+                size: isSmallScreen ? 20 : 24,
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 }
-
-// Widget para tarjetas de ubicaciones populares
+// Widget para tarjetas de ubicaciones populares - Updated with onTap
 class PopularLocationCard extends StatelessWidget {
   final String image;
   final String title;
   final String location;
+  final double height;
+  final VoidCallback? onTap;
 
   const PopularLocationCard({
     super.key,
     required this.image,
     required this.title,
     required this.location,
+    required this.height,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        image: DecorationImage(
-          image: AssetImage(image),
-          fit: BoxFit.cover,
-        ),
-      ),
+    final titleSize = height * 0.07; // Font size proportional to card height
+    final locationSize = height * 0.06;
+
+    return GestureDetector(
+      onTap: onTap,
       child: Container(
+        height: height,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.transparent,
-              Colors.black.withOpacity(0.7),
-            ],
+          image: DecorationImage(
+            image: AssetImage(image),
+            fit: BoxFit.cover,
+            onError: (exception, stackTrace) {
+              print('Error loading image: $exception');
+            },
           ),
         ),
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                const Icon(
-                  Icons.location_on,
-                  color: Colors.white,
-                  size: 12,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  location,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                Colors.black.withOpacity(0.7),
               ],
             ),
-          ],
+          ),
+          padding: EdgeInsets.all(height * 0.06),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: titleSize,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              SizedBox(height: height * 0.02),
+              Row(
+                children: [
+                  Icon(
+                    Icons.location_on,
+                    color: Colors.white,
+                    size: locationSize,
+                  ),
+                  SizedBox(width: height * 0.02),
+                  Expanded(
+                    child: Text(
+                      location,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: locationSize,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
+// LikeButton widget
 class LikeButton extends StatefulWidget {
   final Function(bool)? onLikeChanged;
   final bool initialLiked;
+  final double iconSize;
 
   const LikeButton({
     super.key,
     this.onLikeChanged,
     this.initialLiked = false,
+    this.iconSize = 24,
   });
 
   @override
@@ -445,7 +534,7 @@ class _LikeButtonState extends State<LikeButton> {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(widget.iconSize),
       onTap: () {
         setState(() {
           isLiked = !isLiked;
@@ -457,11 +546,11 @@ class _LikeButtonState extends State<LikeButton> {
         }
       },
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(widget.iconSize * 0.3),
         child: Icon(
           isLiked ? Icons.favorite : Icons.favorite_border,
           color: isLiked ? con.rosa : Colors.grey,
-          size: 24,
+          size: widget.iconSize,
         ),
       ),
     );
