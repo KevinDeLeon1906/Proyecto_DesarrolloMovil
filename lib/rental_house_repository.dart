@@ -78,4 +78,21 @@ class RentalHouseRepository {
     return _houses.where((house) => house.price <= maxPrice).toList();
   }
 
+  // Obtener casas en orden aleatorio con límite opcional
+  List<RentalHouse> getRandomHouses({int? limit}) {
+    // Create a copy of the houses list to avoid modifying the original
+    final randomHouses = List<RentalHouse>.from(_houses);
+
+    // Shuffle the copy
+    randomHouses.shuffle();
+
+    // If a limit is specified and it's less than the total number of houses,
+    // return only that many houses
+    if (limit != null && limit < randomHouses.length) {
+      return randomHouses.sublist(0, limit);
+    }
+
+    return randomHouses;
+  }
+
 }

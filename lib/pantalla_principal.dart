@@ -21,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _houses = _repository.getAllHouses();
+    _houses = _repository.getRandomHouses(limit: 3);
   }
 
   @override

@@ -22,7 +22,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
   @override
   void initState() {
     super.initState();
-    _houses = _repository.getAllHouses();
+    _houses = _repository.getRandomHouses();
     // Select a house to recommend (you could use different criteria)
     _recommendedHouse = _houses.first;
   }
