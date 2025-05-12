@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proyecto/auth_service.dart';
 import 'package:proyecto/constantes.dart' as con;
 import 'package:proyecto/pantalla_login.dart';
 import 'package:proyecto/pantalla_principal.dart';
@@ -15,6 +16,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -22,6 +24,83 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _registerUser() async {
+    // Validar campos
+    if (_usernameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _passwordController.text.isEmpty) {
+      _showErrorSnackBar('Please fill in all fields');
+      return;
+    }
+
+    // Validar formato de email
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(_emailController.text)) {
+      _showErrorSnackBar('Please enter a valid email address');
+      return;
+    }
+
+    // Validar longitud de contraseña
+    if (_passwordController.text.length < 6) {
+      _showErrorSnackBar('Password must be at least 6 characters long');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final authService = Provider.of<AuthService>(context, listen: false);
+
+    final success = await authService.register(
+      username: _usernameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (success) {
+      _showSuccessSnackBar('Registration successful!');
+
+      // Navigate to home screen
+      Future.delayed(const Duration(seconds: 1), () {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const HomeScreen(),
+          ),
+        );
+      });
+    } else {
+      _showErrorSnackBar(authService.error ?? 'Registration failed');
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 1),
+      ),
+    );
   }
 
   @override
@@ -160,10 +239,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Acción para registrarse
-                          _registerUser();
-                        },
+                        onPressed: _isLoading ? null : _registerUser,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: con.rosa,
                           foregroundColor: Colors.white,
@@ -171,7 +247,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
+                        child: _isLoading
+                            ? const CircularProgressIndicator(color: Colors.white)
+                            : const Text(
                           'Sign Up',
                           style: TextStyle(
                             fontSize: 16,
@@ -289,64 +367,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         onPressed: () {
           // Acción para conectar con red social
         },
-      ),
-    );
-  }
-
-  void _registerUser() {
-    // Validar campos
-    if (_usernameController.text.isEmpty ||
-        _emailController.text.isEmpty ||
-        _passwordController.text.isEmpty) {
-      _showErrorSnackBar('Please fill in all fields');
-      return;
-    }
-
-    // Validar formato de email
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(_emailController.text)) {
-      _showErrorSnackBar('Please enter a valid email address');
-      return;
-    }
-
-    // Validar longitud de contraseña
-    if (_passwordController.text.length < 6) {
-      _showErrorSnackBar('Password must be at least 6 characters long');
-      return;
-    }
-
-    // Aquí iría la lógica para registrar al usuario
-    // Por ahora, solo mostraremos un mensaje de éxito
-    _showSuccessSnackBar('Registration successful!');
-
-    // Navegar a la pantalla principal después de un breve retraso
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => const HomeScreen(),
-        ),
-      );
-    });
-  }
-
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 1),
       ),
     );
   }

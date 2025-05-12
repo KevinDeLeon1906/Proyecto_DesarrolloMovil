@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proyecto/auth_service.dart';
 import 'package:proyecto/constantes.dart' as con;
 import 'package:proyecto/pantalla_principal.dart';
 import 'package:proyecto/pantalla_register.dart';
@@ -14,12 +15,73 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscureText = true;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _login() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      _showErrorSnackBar('Please fill in all fields');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final authService = Provider.of<AuthService>(context, listen: false);
+
+    final success = await authService.login(
+      _emailController.text.trim(),
+      _passwordController.text,
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (success) {
+      _showSuccessSnackBar('Login successful!');
+
+      // Navigate to home screen
+      Future.delayed(const Duration(seconds: 1), () {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const HomeScreen(),
+          ),
+        );
+      });
+    } else {
+      _showErrorSnackBar(authService.error ?? 'Login failed');
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 1),
+      ),
+    );
   }
 
   @override
@@ -45,11 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back_ios_new, size: 16),
                   onPressed: () {
-                    Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => const HomeScreen(),
-                        )
-                    );
+                    Navigator.of(context).pop();
                   },
                 ),
               ),
@@ -145,9 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Acción para iniciar sesión
-                  },
+                  onPressed: _isLoading ? null : _login,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: con.rosa,
                     foregroundColor: Colors.white,
@@ -155,7 +211,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
                     'Sign In',
                     style: TextStyle(
                       fontSize: 16,
